@@ -7,8 +7,7 @@ await emptyDir("./npm");
 await build({
   entryPoints: [
     "./src/node/serverSentEventGenerator.ts",
-    "./src/web/serverSentEventGenerator.ts",
-    "./test/node.ts",
+    "./src/web/serverSentEventGenerator.ts"
   ],
   outDir: "./npm",
   shims: {
@@ -17,16 +16,16 @@ await build({
   },
   package: {
     // package.json properties
-    name: "@starfederation/datastar-sdk",
+    name: "datastar-sdk",
     version: Deno.args[0] || VERSION,
     description: "Cross-runtime Javascript SDK for Datastar",
     license: "MIT",
     repository: {
       type: "git",
-      url: "git+https://github.com/starfederation/datastar.git",
+      url: "git+https://github.com/starfederation/datastar-typescript.git",
     },
     bugs: {
-      url: "https://github.com/starfederation/datastar/issues",
+      url: "https://github.com/starfederation/datastar-typescript/issues",
     },
     exports: {
       "./abstractServerSentEventGenerator": {

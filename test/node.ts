@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { ServerSentEventGenerator } from "../src/node/serverSentEventGenerator.ts";
+import { ServerSentEventGenerator } from "../npm/esm/node/serverSentEventGenerator.js";
 import type { Jsonifiable } from "../src/types.ts";
 
 const hostname = "127.0.0.1";

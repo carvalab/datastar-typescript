@@ -1,5 +1,5 @@
 {
-  "name": "@starfederation/datastar-sdk",
+  "name": "datastar-sdk",
   "version": "1.0.0-RC.1",
   "description": "TypeScript SDK for Datastar",
   "scripts": {
@@ -9,14 +9,17 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/starfederation/datastar.git"
+    "url": "git+https://github.com/starfederation/datastar-typescript.git"
   },
   "author": "Patrick Marchand",
+  "contributors": [
+    "Edu Wass"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/starfederation/datastar/issues"
+    "url": "https://github.com/starfederation/datastar-typescript/issues"
   },
-  "homepage": "https://github.com/starfederation/datastar#readme",
+  "homepage": "https://github.com/starfederation/datastar-typescript#readme",
   "files": [
     "npm/script/src/",
     "npm/script/package.json",
@@ -26,9 +29,8 @@
     "npm/README.md",
     "README.md"
   ],
-  "dependencies": {},
   "devDependencies": {
-    "typescript": "~5.6.2",
-    "@types/node": "^22.10.2"
+    "@types/node": "^22.10.2",
+    "typescript": "~5.6.2"
   }
 }

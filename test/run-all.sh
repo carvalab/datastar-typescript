@@ -28,7 +28,7 @@ deno run -A build.ts
 # Start servers and run tests
 
 declare -A servers
-servers[node]="node npm/esm/test/node.js"
+servers[node]="node test/node.ts"
 servers[bun]="bun run test/bun.ts"
 servers[deno]="deno run --allow-net test/deno.ts"
 declare -A ports
