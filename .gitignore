@@ -24,3 +24,6 @@ dist-ssr
 *.sln
 *.sw?
 npm
+
+# Ignore the datastar core repo used for tests
+/datastar/

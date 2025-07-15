@@ -177,6 +177,7 @@ To develop or contribute to this SDK, you'll need:
 - [Deno](https://deno.land/) (primary development environment)
 - [Node.js](https://nodejs.org/) (for Node.js compatibility testing)
 - [Bun](https://bun.sh/) (for Bun compatibility testing)
+- [Go](https://golang.org/) (required for running the Go test suite)
 
 ### Building
 
@@ -195,53 +196,36 @@ deno run -A build.ts VERSION
 
 ### Testing
 
-#### Automated Testing
+To run all tests for Node.js, Deno, and Bun (mirroring CI):
 
-Run tests for all runtimes:
 ```bash
-# Node.js
-npm run test-node
-
-# Deno
-deno task test-deno
-
-# Bun
-bun run test-bun
+bash test/run-all.sh
 ```
 
-#### Manual Testing
+- This script will:
+  - Check for required tools (`deno`, `node`, `bun`, `go`, `git`)
+  - Clone or update the core datastar repo for test files (in `/datastar/`, which is gitignored)
+  - Build the SDK
+  - Start test servers for each runtime
+  - Run the Go test suite against each server
+  - Print results and logs
 
-Start a development server:
-```bash
-# Node.js
-npm run serve-node
-
-# Deno
-deno task serve-deno
-
-# Bun
-bun run serve-bun
-```
-
-Then run the test suite manually:
-```bash
-cd ../test
-./test-all.sh http://127.0.0.1:3000
-```
+> **Note:** This is the same script used by GitHub Actions for CI.
 
 ### Project Structure
 
 ```
 typescript/
-├── src/
-│   ├── node/           # Node.js-specific implementation
-│   ├── web/            # Web standards implementation (Deno/Bun)
-│   └── abstract/       # Abstract base classes
-├── examples/
-│   ├── node/           # Node.js example
-│   ├── deno/           # Deno example
-│   └── bun/            # Bun example
-└── test/               # Test suite
+├── src/                  # SDK source code
+│   ├── node/             # Node.js-specific implementation
+│   ├── web/              # Web standards implementation (Deno/Bun)
+│   └── abstract/         # Abstract base classes
+├── examples/             # Example apps for each runtime
+│   ├── node/
+│   ├── deno/
+│   └── bun/
+├── test/                 # Unified test runner and test entrypoints
+└── datastar/             # (gitignored) Cloned core repo for Go test files (used by test/run-all.sh)
 ```
 
 ## Runtime Support
