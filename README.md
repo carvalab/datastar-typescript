@@ -7,7 +7,7 @@
 
 A TypeScript SDK for building reactive web applications with [Datastar](https://github.com/starfederation/datastar).
 
-Implements the [SDK spec](../README.md) and exposes an abstract ServerSentEventGenerator class that can be used to implement runtime specific classes. NodeJS and web standard runtimes are currently implemented.
+Implements the [SDK spec](https://github.com/starfederation/datastar/blob/develop/sdk/README.md) and exposes an abstract ServerSentEventGenerator class that can be used to implement runtime specific classes. NodeJS and web standard runtimes are currently implemented.
 
 Currently it only exposes an http1 server, if you want http2 I recommend you use a reverse proxy until http2 support is added.
 
@@ -169,6 +169,59 @@ Patches HTML elements into the client DOM.
 stream.patchElements('<div id="myDiv">Updated content</div>');
 ```
 
+##### `removeElements(selector?, elements?, options?)`
+Removes elements from the client DOM by selector or by HTML string with IDs.
+
+**Parameters:**
+- `selector`: CSS selector for elements to remove (optional; mutually exclusive with elements)
+- `elements`: HTML string of elements with IDs to remove (optional; required if selector is not provided)
+- `options`: Optional configuration object with `eventId`, `retryDuration`
+
+**Examples:**
+```javascript
+// Remove by selector
+stream.removeElements('#feed, #otherid');
+// Remove by HTML elements with IDs
+stream.removeElements(undefined, '<div id="first"></div><div id="second"></div>');
+```
+
+##### `removeSignals(signalKeys, options?)`
+Removes one or more signals from the client signal store.
+
+**Parameters:**
+- `signalKeys`: The signal key or array of keys to remove
+- `options`: Optional configuration object with `onlyIfMissing`, `eventId`, `retryDuration`
+
+**Examples:**
+```javascript
+// Remove a single signal
+stream.removeSignals('foo');
+// Remove multiple signals
+stream.removeSignals(['foo', 'bar']);
+```
+
+##### `executeScript(script, options?)`
+Executes a script on the client by sending a <script> tag via SSE.
+
+**Parameters:**
+- `script`: The JavaScript code to execute
+- `options`: Optional configuration object:
+  - `autoRemove`: If true (default), adds data-effect="el.remove()" to the script tag
+  - `attributes`: Object of script tag attributes (preferred)
+  - `eventId`, `retryDuration`
+
+**Examples:**
+```javascript
+// Execute a simple script
+stream.executeScript('console.log("Hello from server!")');
+
+// Execute a script and keep it in the DOM
+stream.executeScript('alert("Persistent!")', { autoRemove: false });
+
+// Execute with custom attributes (object form preferred)
+stream.executeScript('doSomething()', { attributes: { type: "module", async: "true" } });
+```
+
 ## Development
 
 ### Prerequisites
@@ -258,3 +311,6 @@ You'll need to implement:
 The abstract class provides these public methods:
 - `patchElements(elements, options?)`: Patch HTML elements
 - `patchSignals(signals, options?)`: Patch signal data
+- `removeElements(selector?, elements?, options?)`: Remove elements by selector or HTML string
+- `removeSignals(signalKeys, options?)`: Remove one or more signals
+- `executeScript(script, options?)`: Execute a script on the client

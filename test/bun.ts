@@ -13,8 +13,8 @@ const server = Bun.serve({
           headers: { "Content-Type": "text/html" },
         },
       );
-      } else if (url.pathname.includes("/merge")) {
-    const reader = await ServerSentEventGenerator.readSignals(req);
+    } else if (url.pathname.includes("/merge")) {
+      const reader = await ServerSentEventGenerator.readSignals(req);
 
       if (!reader.success) {
         console.error("Error while reading signals", reader.error);
@@ -31,8 +31,8 @@ const server = Bun.serve({
           `<div id="toMerge">Hello ${reader.signals.foo}</div>`,
         );
       });
-      } else if (url.pathname.includes("/test")) {
-    const reader = await ServerSentEventGenerator.readSignals(req);
+    } else if (url.pathname.includes("/test")) {
+      const reader = await ServerSentEventGenerator.readSignals(req);
       if (reader.success === true) {
         const events = reader.signals.events;
         if (isEventArray(events)) {
@@ -73,109 +73,40 @@ function isEventArray(events) {
 function testEvents(stream, events) {
   events.forEach((event) => {
     const { type, ...e } = event;
-    
-    // Convert camelCase to method calls like Python SDK does
     switch (type) {
-      case "patchElements":
-        handlepatchElements(stream, e);
+      case "patchElements": {
+        const { elements, mode, selector, useViewTransition, ...options } = e;
+        const patchOptions = { ...options };
+        if (mode && mode !== "outer") patchOptions.mode = mode;
+        if (selector) patchOptions.selector = selector;
+        if (useViewTransition !== undefined) patchOptions.useViewTransition = useViewTransition;
+        stream.patchElements(elements || "", patchOptions);
         break;
-      case "removeElements":
-        handleRemoveElements(stream, e);
+      }
+      case "removeElements": {
+        const { selector, elements, ...options } = e;
+        stream.removeElements(selector, elements, options);
         break;
-      case "patchSignals":
-        handlepatchSignals(stream, e);
+      }
+      case "patchSignals": {
+        const { signals, "signals-raw": signalsRaw, ...options } = e;
+        if (signalsRaw) {
+          stream.patchSignals(signalsRaw, options || undefined);
+        } else if (signals) {
+          stream.patchSignals(JSON.stringify(signals), options || undefined);
+        }
         break;
-      case "removeSignals":
-        handleRemoveSignals(stream, e);
+      }
+      case "removeSignals": {
+        const { paths, ...options } = e;
+        stream.removeSignals(paths, options);
         break;
-      case "executeScript":
-        handleExecuteScript(stream, e);
+      }
+      case "executeScript": {
+        const { script, autoRemove = true, attributes, ...options } = e;
+        stream.executeScript(script, { autoRemove, attributes, ...options });
         break;
-      // Legacy support for old event types
-      case "mergeFragments":
-        handlepatchElements(stream, { ...e, mode: e.mode || "outer" });
-        break;
-      case "removeFragments":
-        handleRemoveElements(stream, e);
-        break;
-      case "mergeSignals":
-        handlepatchSignals(stream, e);
-        break;
-    }
-  });
-}
-
-function handlepatchElements(stream, e) {
-  if (e !== null && typeof e === "object") {
-    const { elements, mode, selector, useViewTransition, ...options } = e;
-    
-    // Build patch options
-    const patchOptions = { ...options };
-    if (mode && mode !== "outer") patchOptions.mode = mode;
-    if (selector) patchOptions.selector = selector;
-    if (useViewTransition !== undefined) patchOptions.useViewTransition = useViewTransition;
-    
-    // For remove mode, elements might be empty which is fine
-    const elementsToUse = elements || "";
-    stream.patchElements(elementsToUse, patchOptions);
-  }
-}
-
-function handleRemoveElements(stream, e) {
-  if (e !== null && typeof e === "object" && "selector" in e) {
-    const { selector, ...options } = e;
-    stream.patchElements("", { ...options, mode: "remove", selector: selector });
-  }
-}
-
-function handlepatchSignals(stream, e) {
-  if (e !== null && typeof e === "object") {
-    const { signals, "signals-raw": signalsRaw, ...options } = e;
-    
-    if (signalsRaw) {
-      stream.patchSignals(signalsRaw, options || undefined);
-    } else if (signals) {
-      stream.patchSignals(JSON.stringify(signals), options || undefined);
-    }
-  }
-}
-
-function handleRemoveSignals(stream, e) {
-  if (e !== null && typeof e === "object" && "paths" in e) {
-    const { paths, ...options } = e;
-    const pathArray = paths;
-    const removeSignals = {};
-    pathArray.forEach(path => {
-      removeSignals[path] = null;
-    });
-    stream.patchSignals(JSON.stringify(removeSignals), options || undefined);
-  }
-}
-
-function handleExecuteScript(stream, e) {
-  if (e !== null && typeof e === "object" && "script" in e) {
-    const { script, autoRemove = true, attributes, ...options } = e;
-    let scriptElement = `<script`;
-    
-    // Add auto-remove behavior first (Python SDK pattern)
-    if (autoRemove) {
-      scriptElement += ` data-effect="el.remove()"`;
-    }
-    
-    // Add attributes if provided
-    if (attributes && typeof attributes === "object") {
-      for (const [key, value] of Object.entries(attributes)) {
-        scriptElement += ` ${key}="${value}"`;
       }
     }
-    
-    scriptElement += `>${script}</script>`;
-    
-    // Use append mode with body selector (Python SDK pattern)
-    stream.patchElements(scriptElement, { 
-      mode: "append", 
-      selector: "body",
-      ...options 
-    });
-  }
+  });
 } 

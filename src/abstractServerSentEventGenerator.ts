@@ -115,9 +115,26 @@ export abstract class ServerSentEventGenerator {
   /**
    * Patches HTML elements into the DOM.
    *
-   * @param elements - HTML elements that will be patched.
-   * @param [options] - Additional options for patching.
-   * @throws {Error} If validation fails
+   * Use this to insert, update, or remove elements in the client DOM. Supports various patch modes and options.
+   *
+   * Examples:
+   * ```
+   * // Insert new element inside #container
+   * patchElements('<div id="new">Hello</div>', { selector: '#container', mode: 'append' });
+   *
+   * // Replace element by ID
+   * patchElements('<div id="replaceMe">Replaced</div>');
+   *
+   * // Remove by selector, note that you can also use removeElements
+   * patchElements('', { selector: '#toRemove', mode: 'remove' });
+   *
+   * // Remove by elements with IDs, note that you can also use removeElements
+   * patchElements('<div id="first"></div><div id="second"></div>', { mode: 'remove' });
+   * ```
+   *
+   * @param elements - HTML string of elements to patch (must have IDs unless using selector).
+   * @param options - Patch options: selector, mode, useViewTransition, eventId, retryDuration.
+   * @returns The SSE lines to send.
    */
   public patchElements(
     elements: string,
@@ -166,9 +183,20 @@ export abstract class ServerSentEventGenerator {
   /**
    * Patches signals into the signal store.
    *
+   * Use this to update client-side signals using RFC 7386 JSON Merge Patch semantics.
+   *
+   * Examples:
+   * ```
+   * // Patch a single signal
+   * patchSignals('{"show": true}');
+   *
+   * // Patch multiple signals with onlyIfMissing option
+   * patchSignals('{"output": "Test", "user": {"name": "Alice"}}', { onlyIfMissing: true });
+   * ```
+   *
    * @param signals - JSON string containing signal data to patch.
-   * @param [options] - Additional options for patching.
-   * @throws {Error} If validation fails
+   * @param options - Patch options: onlyIfMissing, eventId, retryDuration.
+   * @returns The SSE lines to send.
    */
   public patchSignals(
     signals: string,
@@ -188,5 +216,152 @@ export abstract class ServerSentEventGenerator {
       eventId,
       retryDuration,
     });
+  }
+
+  /**
+   * Executes a script on the client by sending a <script> tag via SSE.
+   *
+   * Use this to run JavaScript in the client browser. By default, the script tag will auto-remove after execution.
+   *
+   * Examples:
+   * ```
+   * // Execute a simple script
+   * executeScript('console.log("Hello from server!")');
+   *
+   * // Execute a script and keep it in the DOM
+   * executeScript('alert("Persistent!")', { autoRemove: false });
+   *
+   * // Execute with custom attributes (object form preferred)
+   * executeScript('doSomething()', { attributes: { type: "module", async: "true" } });
+   *
+   * // (Advanced) Execute with custom attributes as array of strings
+   * executeScript('doSomething()', { attributes: ['type="module"', 'async'] });
+   * ```
+   *
+   * @param script - The JavaScript code to execute.
+   * @param options - Options: autoRemove, attributes (object preferred), eventId, retryDuration.
+   * @returns The SSE lines to send.
+   */
+  public executeScript(
+    script: string,
+    options?: {
+      autoRemove?: boolean;
+      attributes?: string[] | Record<string, string>;
+      eventId?: string;
+      retryDuration?: number;
+    }
+  ): ReturnType<typeof this.send> {
+    const {
+      autoRemove = true,
+      attributes = {},
+      eventId,
+      retryDuration,
+    } = options || {};
+
+    let attrString = "";
+
+    // Handle attributes as object (preferred by test)
+    if (attributes && typeof attributes === "object" && !Array.isArray(attributes)) {
+      attrString = Object.entries(attributes)
+        .map(([k, v]) => ` ${k}="${v}"`)
+        .join("");
+    } else if (Array.isArray(attributes)) {
+      attrString = attributes.length > 0 ? " " + attributes.join(" ") : "";
+    }
+
+    // Only add data-effect if autoRemove is true
+    if (autoRemove) {
+      attrString += ' data-effect="el.remove()"';
+    }
+
+    const scriptTag = `<script${attrString}>${script}</script>`;
+
+    const dataLines = [
+      ...this.eachNewlineIsADataLine("mode", "append"),
+      ...this.eachNewlineIsADataLine("selector", "body"),
+      ...this.eachNewlineIsADataLine("elements", scriptTag),
+    ];
+
+    return this.send("datastar-patch-elements", dataLines, {
+      eventId,
+      retryDuration,
+    });
+  }
+
+  /**
+   * Convenience method to remove elements from the DOM.
+   *
+   * Provide either a CSS selector (to remove all matching elements) OR an HTML string of elements with IDs (to remove specific elements by ID).
+   *
+   * - If `selector` is provided, it will be used to target elements for removal (elements param is ignored).
+   * - If `selector` is not provided, `elements` must be a non-empty HTML string where each top-level element has an ID.
+   *
+   * Examples:
+   * ```
+   *   // Remove by selector
+   *   removeElements('#feed, #otherid');
+   *   // Remove by HTML elements with IDs
+   *   removeElements(undefined, '<div id="first"></div><div id="second"></div>');
+   * ```
+   * @param selector - CSS selector for elements to remove (optional; mutually exclusive with elements).
+   * @param elements - HTML string of elements with IDs to remove (optional; required if selector is not provided).
+   * @param options - Additional options: eventId, retryDuration.
+   * @returns The SSE lines to send.
+   */
+  public removeElements(
+    selector?: string,
+    elements?: string,
+    options?: {
+      eventId?: string;
+      retryDuration?: number;
+    }
+  ): ReturnType<typeof this.send> {
+    // If selector is not provided, elements must be present and non-empty
+    if (!selector && (!elements || elements.trim() === '')) {
+      throw new Error('Either selector or elements (with IDs) must be provided to remove elements.');
+    }
+    return this.patchElements(elements ?? '', {
+      selector,
+      mode: 'remove',
+      eventId: options?.eventId,
+      retryDuration: options?.retryDuration,
+    });
+  }
+
+  /**
+   * Convenience method to remove one or more signals from the client signal store.
+   *
+   * This sends a JSON Merge Patch where each specified key is set to null, per RFC 7386 and the Datastar spec.
+   *
+   * Examples:
+   * ```
+   * // Remove a single signal
+   * removeSignals('foo');
+   *
+   * // Remove multiple signals
+   * removeSignals(['foo', 'bar']);
+   *
+   * // Remove with options
+   * removeSignals('foo', { eventId: '123' });
+   * ```
+   *
+   * @param signalKeys - The signal key or array of keys to remove.
+   * @param options - Patch options: onlyIfMissing, eventId, retryDuration.
+   * @returns The SSE lines to send.
+   */
+  public removeSignals(
+    signalKeys: string | string[],
+    options?: {
+      onlyIfMissing?: boolean;
+      eventId?: string;
+      retryDuration?: number;
+    }
+  ): ReturnType<typeof this.send> {
+    const keys = Array.isArray(signalKeys) ? signalKeys : [signalKeys];
+    const patch: Record<string, null> = {};
+    for (const key of keys) {
+      patch[key] = null;
+    }
+    return this.patchSignals(JSON.stringify(patch), options);
   }
 }
