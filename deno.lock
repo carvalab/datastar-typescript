@@ -16,7 +16,7 @@
     "jsr:@std/io@0.223": "0.223.0",
     "jsr:@std/path@0.223": "0.223.0",
     "jsr:@std/path@1": "1.1.0",
-    "jsr:@std/path@1.0.0-rc.1": "1.0.0-rc.1",
+    "jsr:@std/path@1.0.0-RC.2": "1.0.0-RC.2",
     "jsr:@std/path@^1.1.0": "1.1.0",
     "jsr:@std/path@~0.225.2": "0.225.2",
     "jsr:@ts-morph/bootstrap@0.24": "0.24.0",
@@ -73,7 +73,7 @@
     "@std/fs@0.229.3": {
       "integrity": "783bca21f24da92e04c3893c9e79653227ab016c48e96b3078377ebd5222e6eb",
       "dependencies": [
-        "jsr:@std/path@1.0.0-rc.1"
+        "jsr:@std/path@1.0.0-RC.2"
       ]
     },
     "@std/fs@1.0.18": {
@@ -101,7 +101,7 @@
         "jsr:@std/assert@0.226"
       ]
     },
-    "@std/path@1.0.0-rc.1": {
+    "@std/path@1.0.0-RC.2": {
       "integrity": "b8c00ae2f19106a6bb7cbf1ab9be52aa70de1605daeb2dbdc4f87a7cbaf10ff6"
     },
     "@std/path@1.1.0": {
