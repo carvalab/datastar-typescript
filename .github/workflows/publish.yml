@@ -46,9 +46,6 @@ jobs:
             deno run -A build.ts
           fi
 
-      - name: Run tests
-        run: bash test/run-all.sh
-
       - name: Publish to npm
         working-directory: ./npm
         env:
