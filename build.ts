@@ -16,7 +16,7 @@ await build({
   },
   package: {
     // package.json properties
-    name: "datastar-sdk",
+    name: "@starfederation/datastar-sdk",
     version: Deno.args[0] || VERSION,
     description: "Cross-runtime Javascript SDK for Datastar",
     license: "MIT",

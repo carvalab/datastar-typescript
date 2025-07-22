@@ -1,5 +1,5 @@
 {
-  "name": "datastar-sdk",
+  "name": "@starfederation/datastar-sdk",
   "version": "1.0.0-RC.2",
   "description": "TypeScript SDK for Datastar",
   "scripts": {

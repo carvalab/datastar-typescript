@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { ServerSentEventGenerator } from "datastar-sdk/node";
+import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 
 const hostname = "127.0.0.1";
 const port = 3000;

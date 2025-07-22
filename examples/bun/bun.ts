@@ -1,4 +1,4 @@
-import { ServerSentEventGenerator } from "datastar-sdk/web";
+import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/web";
 
 const server = Bun.serve({
   port: 3000,

@@ -22,24 +22,24 @@ Currently it only exposes an http1 server, if you want http2 I recommend you use
 
 **Node.js:**
 ```bash
-npm install datastar-sdk
+npm install @starfederation/datastar-sdk
 ```
 ```javascript
-import { ServerSentEventGenerator } from "datastar-sdk/node";
+import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 ```
 
 **Deno:**
 ```typescript
 // No installation needed, import directly from npm
-import { ServerSentEventGenerator } from "npm:datastar-sdk/web";
+import { ServerSentEventGenerator } from "npm:@starfederation/datastar-sdk/web";
 ```
 
 **Bun:**
 ```bash
-bun add datastar-sdk
+bun add @starfederation/datastar-sdk
 ```
 ```javascript
-import { ServerSentEventGenerator } from "datastar-sdk/web";
+import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/web";
 ```
 
 ### Basic Usage
@@ -47,7 +47,7 @@ import { ServerSentEventGenerator } from "datastar-sdk/web";
 Here's a simple example in Node showing how to read client signals and send back element patches:
 
 ```javascript
-import { ServerSentEventGenerator } from "datastar-sdk/node";
+import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 
 // Read signals from the client request
 const reader = await ServerSentEventGenerator.readSignals(req);
@@ -284,17 +284,17 @@ typescript/
 ## Runtime Support
 
 ### Node.js
-- Import: `datastar-sdk/node`
+- Import: `@starfederation/datastar-sdk/node`
 - Requires: Node.js 18+
 - Uses Node.js-specific HTTP APIs
 
 ### Deno
-- Import: `npm:datastar-sdk/web`
+- Import: `npm:@starfederation/datastar-sdk/web`
 - Requires: Deno 1.30+
 - Uses Web Standards APIs
 
 ### Bun
-- Import: `datastar-sdk/web`
+- Import: `@starfederation/datastar-sdk/web`
 - Requires: Bun 1.0+
 - Uses Web Standards APIs
 
